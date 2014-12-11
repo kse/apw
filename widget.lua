@@ -22,21 +22,24 @@ local pulseaudio = require("apw.pulseaudio")
 
 
 -- Configuration variables
-local width         = 10        -- width in pixels of progressbar
+local width         = 8         -- width in pixels of progressbar
 local margin_right  = 0         -- right margin in pixels of progressbar 
 local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 1         -- top margin in pixels of progressbar 
-local margin_bottom = 5         -- bottom margin in pixels of progressbar  
+local margin_top    = 2         -- top margin in pixels of progressbar 
+local margin_bottom = 2         -- bottom margin in pixels of progressbar  
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
 local minstep	    = 0.01	-- minimum stepsize for volume
-local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
-local color_bg      = '#0F1419'--'#33450f' -- background color
-local color_mute    = '#be2a15' -- foreground color when muted
-local color_bg_mute = color_bg --'#532a15' -- background color when muted
+local color         = '#aaaaaa' -- '#698f1e' -- foreground color of progessbar
+local color_bg      = '#222222' -- '#33450f' -- background color
+local color_mute    = '#aa0000' -- foreground color when muted
+local color_bg_mute = color_bg  -- '#532a15' -- background color when muted
 local mixer         = 'pavucontrol' -- mixer command
 local mixer_class   = 'Pavucontrol'
-local veromix	    = 'veromix' --veromix command
-local veromix_class = 'veromix'
+local second	    = 'veromix'     -- veromix command
+local second_class  = 'veromix'
+local icon_theme    = 'gnome'
+local icon_path     = '/usr/share/icons/'..icon_theme..'/32x32/status/'
+local icon_level    = { [0] = 'low', [1] = 'medium', [2] = 'high' }
 
 -- default configuration overridden by Beautiful theme
 color = beautiful.apw_fg_color or color
@@ -77,8 +80,7 @@ end
 
 local function _update()
 	pulseBar:set_value(p.Volume)
-	text = p.Perc 
-	pulseBox:set_text(''..text..'')
+	pulseBox:set_text(p.Perc..'%')
 	pulseWidget.setColor(p.Mute)
 end
 
@@ -86,15 +88,23 @@ function pulseWidget.SetMixer(command)
 	mixer = command
 end
 
+function pulseWidget.SetSecondary(command)
+        second = command
+end
+
 function pulseWidget.Up()
 	p:SetVolume(p.Volume + pulseBar.step)
-	notid = naughty.notify({ text = 'Volume: '..p.Perc, replaces_id = notid }).id
+	notid = naughty.notify({ title = 'apw', text = 'Volume: '..p.Perc..'%',
+				icon = icon_path..'/audio-volume-'..icon_level[math.floor(p.Perc/50)]..'.png',
+				replaces_id = notid }).id
 	_update()
 end	
 
 function pulseWidget.Down()
 	p:SetVolume(p.Volume - pulseBar.step)
-        notid = naughty.notify({ text = 'Volume: '..p.Perc, replaces_id = notid }).id
+        notid = naughty.notify({ title = 'apw', text = 'Volume: '..p.Perc..'%',
+				icon = icon_path..'/audio-volume-'..icon_level[math.floor(p.Perc/50)]..'.png',
+				replaces_id = notid }).id
 	_update()
 end	
 
@@ -117,10 +127,12 @@ end
 
 function pulseWidget.ToggleMute()
 	p:ToggleMute()
-	local msg = {}
-	msg[false] = "Unmuted"
-	msg[true]  = "Muted"
-        notid = naughty.notify({ text = msg[p.Mute]..': '..p.Perc, replaces_id = notid }).id
+	local  msg = { [false] = 'Unmuted', [true] = 'Muted' }
+	local icon = { [false] = icon_path..'/audio-volume-'..icon_level[math.floor(p.Perc/50)]..'.png',
+			[true] = icon_path..'/audio-volume-muted.png' }
+        notid = naughty.notify({ title = 'apw', text = msg[p.Mute]..': '..p.Perc..'%',
+				icon = icon[p.Mute],
+				replaces_id = notid }).id
 	_update()
 end
 
@@ -134,12 +146,10 @@ function pulseWidget.LaunchMixer()
 	_update()
 end
 
-function pulseWidget.LaunchVeromix()
-	run_or_kill(veromix, { class = veromix_class })
+function pulseWidget.LaunchSecondary()
+	run_or_kill(second, { class = second_class })
 	_update()	
 end
-
-
 
 function run_or_kill(cmd, properties)
    local clients = client.get()
@@ -189,17 +199,17 @@ function match (table1, table2)
    return true
 end
 
-function pulseWidget.getTextBox()
+function pulseWidget.text()
 	return pulseBox
 end
 
 
 -- register mouse button actions
 buttonsTable = awful.util.table.join(
-		awful.button({ }, 1,  pulseWidget.LaunchVeromix),
+                awful.button({ }, 1,  pulseWidget.LaunchMixer),
 		awful.button({ }, 12, pulseWidget.ToggleMute),
 		awful.button({ }, 2,  pulseWidget.ToggleMute),
-		awful.button({ }, 3,  pulseWidget.LaunchMixer),
+		awful.button({ }, 3,  pulseWidget.LaunchSecondary),
 		awful.button({ }, 4,  pulseWidget.minUp),
 		awful.button({ }, 5,  pulseWidget.minDown)
 	)

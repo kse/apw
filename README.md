@@ -36,6 +36,7 @@ local APW = require("apw/widget")
 
 -- Example: Add to wibox. Here to the right. Do it the way you like it.
 right_layout:add(APW)
+right_layout:add(APW.text())
 
 -- Configure the hotkeys.
 awful.key({ }, "XF86AudioRaiseVolume",  APW.Up),
