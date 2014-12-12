@@ -22,24 +22,26 @@ local pulseaudio = require("apw.pulseaudio")
 
 
 -- Configuration variables
-local width         = 8         -- width in pixels of progressbar
-local margin_right  = 0         -- right margin in pixels of progressbar 
-local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 2         -- top margin in pixels of progressbar 
-local margin_bottom = 2         -- bottom margin in pixels of progressbar  
-local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
-local minstep	    = 0.01	-- minimum stepsize for volume
-local color         = '#aaaaaa' -- '#698f1e' -- foreground color of progessbar
-local color_bg      = '#222222' -- '#33450f' -- background color
-local color_mute    = '#aa0000' -- foreground color when muted
-local color_bg_mute = color_bg  -- '#532a15' -- background color when muted
+local width         = 8          -- width in pixels of progressbar
+local margin_right  = 0          -- right margin in pixels of progressbar 
+local margin_left   = 0          -- left margin in pixels of progressbar 
+local margin_top    = 2          -- top margin in pixels of progressbar 
+local margin_bottom = 2          -- bottom margin in pixels of progressbar  
+local step          = 0.05       -- stepsize for volume change (ranges from 0 to 1)
+local minstep       = 0.01	 -- minimum stepsize for volume
+local color         = '#aaaaaa'  -- '#698f1e' -- foreground color of progessbar
+local color_bg      = '#222222'  -- '#33450f' -- background color
+local color_mute    = '#cc0000'  -- foreground color when muted
+local color_bg_mute = color_bg   -- '#532a15' -- background color when muted
+local color_amp     = '$3465a4'  -- bar color when over 100%
+local color_amp_bg  = color      -- background color when over 100%
 local mixer         = 'pavucontrol' -- mixer command
 local mixer_class   = 'Pavucontrol'
 local second	    = 'veromix'     -- veromix command
 local second_class  = 'veromix'
 local icon_theme    = 'gnome'
 local icon_path     = '/usr/share/icons/'..icon_theme..'/32x32/status/'
-local icon_level    = { [0] = 'low', [1] = 'medium', [2] = 'high' }
+local icon_level    = { [0] = 'muted', 'low', 'medium', 'high' }
 
 -- default configuration overridden by Beautiful theme
 color = beautiful.apw_fg_color or color
@@ -68,20 +70,29 @@ pulseBar.minstep = minstep
 
 local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
 
-function pulseWidget.setColor(mute)
+function pulseWidget.setColor(mute, volume)
 	if mute then
 		pulseBar:set_color(color_mute)
 		pulseBar:set_background_color(color_bg_mute)
 	else
-		pulseBar:set_color(color)
-		pulseBar:set_background_color(color_bg)
+		if p.Volume > 1.0 then
+			pulseBar:set_color(color_amp)
+        	        pulseBar:set_background_color(color_amp_bg)
+		else
+			pulseBar:set_color(color)
+			pulseBar:set_background_color(color_bg)
+		end
 	end
 end
 
 local function _update()
-	pulseBar:set_value(p.Volume)
-	pulseBox:set_text(p.Perc..'%')
-	pulseWidget.setColor(p.Mute)
+	if p.Volume > 1.0 then 
+		pulseBar:set_value(p.Volume - 1.0)
+	else
+                pulseBar:set_value(p.Volume)
+	end
+	pulseBox:set_text(p.Perc)
+	pulseWidget.setColor(p.Mute, p.Volume)
 end
 
 function pulseWidget.SetMixer(command)
@@ -94,17 +105,17 @@ end
 
 function pulseWidget.Up()
 	p:SetVolume(p.Volume + pulseBar.step)
-	notid = naughty.notify({ title = 'apw', text = 'Volume: '..p.Perc..'%',
-				icon = icon_path..'/audio-volume-'..icon_level[math.floor(p.Perc/50)]..'.png',
-				replaces_id = notid }).id
+	notid = naughty.notify({ title = 'apw', text = 'Volume: '..p.Perc,
+				icon = icon_path..'/audio-volume-'..icon_level[math.ceil(p.Volume/0.50)]..'.png',
+				timeout = 2, replaces_id = notid }).id
 	_update()
 end	
 
 function pulseWidget.Down()
 	p:SetVolume(p.Volume - pulseBar.step)
-        notid = naughty.notify({ title = 'apw', text = 'Volume: '..p.Perc..'%',
-				icon = icon_path..'/audio-volume-'..icon_level[math.floor(p.Perc/50)]..'.png',
-				replaces_id = notid }).id
+	notid = naughty.notify({ title = 'apw', text = 'Volume: '..p.Perc,
+				icon = icon_path..'/audio-volume-'..icon_level[math.ceil(p.Volume/0.50)]..'.png',
+				timeout = 2, replaces_id = notid }).id
 	_update()
 end	
 
@@ -128,17 +139,16 @@ end
 function pulseWidget.ToggleMute()
 	p:ToggleMute()
 	local  msg = { [false] = 'Unmuted', [true] = 'Muted' }
-	local icon = { [false] = icon_path..'/audio-volume-'..icon_level[math.floor(p.Perc/50)]..'.png',
-			[true] = icon_path..'/audio-volume-muted.png' }
-        notid = naughty.notify({ title = 'apw', text = msg[p.Mute]..': '..p.Perc..'%',
-				icon = icon[p.Mute],
-				replaces_id = notid }).id
+	local icon = { [false] = icon_path..'/audio-volume-'..icon_level[math.ceil(p.Volume/0.5)]..'.png',
+			[true] = icon_path..'/audio-volume-'..icon_level[0]..'.png' }
+	notid = naughty.notify({ title = 'apw', text = msg[p.Mute]..': '..p.Perc,
+				icon = icon[p.Mute], timeout = 2, replaces_id = notid }).id
 	_update()
 end
 
 function pulseWidget.Update()
 	p:UpdateState()
-	 _update()
+	_update()
 end
 
 function pulseWidget.LaunchMixer()
