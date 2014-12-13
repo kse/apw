@@ -1,16 +1,16 @@
 -- Copyright 2013 mokasin
 -- This file is part of the Awesome Pulseaudio Widget (APW).
--- 
+--
 -- APW is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
--- 
+--
 -- APW is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
+--
 -- You should have received a copy of the GNU General Public License
 -- along with APW. If not, see <http://www.gnu.org/licenses/>.
 
@@ -23,10 +23,10 @@ local pulseaudio = require("apw.pulseaudio")
 
 -- Configuration variables
 local width         = 10        -- width in pixels of progressbar
-local margin_right  = 0         -- right margin in pixels of progressbar 
-local margin_left   = 0         -- left margin in pixels of progressbar 
-local margin_top    = 1         -- top margin in pixels of progressbar 
-local margin_bottom = 5         -- bottom margin in pixels of progressbar  
+local margin_right  = 0         -- right margin in pixels of progressbar
+local margin_left   = 0         -- left margin in pixels of progressbar
+local margin_top    = 1         -- top margin in pixels of progressbar
+local margin_bottom = 5         -- bottom margin in pixels of progressbar
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
 local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
 local color_bg      = '#0F1419'--'#33450f' -- background color
@@ -65,7 +65,7 @@ pulseBar.minstep = minstep
 
 pulseLayout:add(pulseBar)
 pulseLayout:add(pulseBox)
-    
+
 local pulseWidget = wibox.widget.background(wibox.layout.margin(pulseLayout, margin_left, margin_right, margin_top, margin_bottom), color_bg)
 
 function pulseWidget.setColor(mute)
@@ -80,7 +80,7 @@ end
 
 local function _update()
     pulseBar:set_value(p.Volume)
-    text = p.Perc 
+    text = p.Perc
     pulseBox:set_text(''..text..'')
     pulseWidget.setColor(p.Mute)
 end
@@ -89,17 +89,24 @@ function pulseWidget.SetMixer(command)
     mixer = command
 end
 
+function pulseWidget.notify(text)
+    if last_text ~= text then
+        last_text = text;
+        notid = naughty.notify({ text = text, replaces_id = notid }).id
+    end
+end
+
 function pulseWidget.Up()
     p:SetVolume(p.Volume + pulseBar.step)
-    notid = naughty.notify({ text = 'Volume: ' .. p.Perc, replaces_id = notid }).id
+    pulseWidget.notify('Volume: ' .. p.Perc)
     _update()
-end 
+end
 
 function pulseWidget.Down()
     p:SetVolume(p.Volume - pulseBar.step)
-    notid = naughty.notify({ text = 'Volume: ' .. p.Perc, replaces_id = notid }).id
+    pulseWidget.notify('Volume: ' .. p.Perc)
     _update()
-end 
+end
 
 function pulseWidget.ToggleMute()
     p:ToggleMute()
@@ -118,7 +125,7 @@ end
 
 function pulseWidget.LaunchVeromix()
     run_or_kill(veromix, { class = veromix_class })
-    _update()   
+    _update()
 end
 
 
