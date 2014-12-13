@@ -31,16 +31,19 @@ Just put these line to the appropriate places in
 *$XDG_CONFIG_HOME/awesome/rc.lua*.
 
 ```lua
--- Load the widget.
-local APW = require("apw/widget")
+-- Load the library.
+local apw = require("apw")
+
+-- Load the widget
+local apwwidget = apw.widget
 
 -- Example: Add to wibox. Here to the right. Do it the way you like it.
-right_layout:add(APW)
+right_layout:add(apwwidget)
 
 -- Configure the hotkeys.
-awful.key({ }, "XF86AudioRaiseVolume",  APW.Up),
-awful.key({ }, "XF86AudioLowerVolume",  APW.Down),
-awful.key({ }, "XF86AudioMute",         APW.ToggleMute),
+awful.key({ }, "XF86AudioRaiseVolume",  apwwidget.Up),
+awful.key({ }, "XF86AudioLowerVolume",  apwwidget.Down),
+awful.key({ }, "XF86AudioMute",         apwwidget.ToggleMute),
 
 ```
 
@@ -57,11 +60,16 @@ to whatever colors or gradients you wish:
 
 ```lua
 --{{{ APW
-theme.apw_fg_color = {type = 'linear', from = {0, 0}, to={40,0},
-	stops={{0, "#CC8888"}, {.4, "#88CC88"}, {.8, "#8888CC"}}}
-theme.apw_bg_color = "#333333"
-theme.apw_mute_fg_color = "#CC9393"
-theme.apw_mute_bg_color = "#663333"
+theme.apw = {
+	fg_color = theme.fg_normal,
+	bg_color = theme.bg_systray,
+	mute_fg_color = "#CC9393",
+	mute_bg_color = "#663333",
+	margin_bottom = 1,
+	margin_top = 1,
+	margin_left = 10,
+	width = 6
+}
 --}}}
 
 ```
@@ -80,8 +88,7 @@ Right-clicking the widget launches a mixer.  By default this is `pavucontrol`,
 but you can set a different command by calling SetMixer() on your APW object:
 
 ```lua
-local APW = require("apw/widget")
-APW:SetMixer("mixer_command -whatever")
+apwwidget:SetMixer("mixer_command -whatever")
 ```
 
 ### Tip
@@ -90,7 +97,7 @@ changed from somewhere else.
 
 ```lua
 APWTimer = timer({ timeout = 0.5 }) -- set update interval in s
-APWTimer:connect_signal("timeout", APW.Update)
+APWTimer:connect_signal("timeout", apwwidget.Update)
 APWTimer:start()
 ```
 
