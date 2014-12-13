@@ -22,31 +22,23 @@ local pulseaudio = require("apw.pulseaudio")
 
 
 -- Configuration variables
-local width         = 10        -- width in pixels of progressbar
-local margin_right  = 0         -- right margin in pixels of progressbar
-local margin_left   = 0         -- left margin in pixels of progressbar
-local margin_top    = 1         -- top margin in pixels of progressbar
-local margin_bottom = 5         -- bottom margin in pixels of progressbar
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
-local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
-local color_bg      = '#0F1419'--'#33450f' -- background color
-local color_mute    = '#be2a15' -- foreground color when muted
-local color_bg_mute = color_bg --'#532a15' -- background color when muted
-local mixer         = 'pavucontrol' -- mixer command
 local mixer_class   = 'Pavucontrol'
 local veromix       = 'veromix' --veromix command
 local veromix_class = 'veromix'
 
+local apw_theme = (type(beautiful.apw) == "table") and beautiful.apw  or {}
+
 -- default configuration overridden by Beautiful theme
-color = beautiful.apw_fg_color or color
-color_bg = beautiful.apw_bg_color or color_bg
-color_mute = beautiful.apw_mute_fg_color or color_mute
-color_bg_mute = beautiful.apw_mute_bg_color or color_bg_mute
-margin_right = beautiful.apw_margin_right or margin_right
-margin_left = beautiful.apw_margin_left or margin_left
-margin_top = beautiful.apw_margin_top or margin_top
-margin_bottom = beautiful.apw_margin_bottom or margin_bottom
-width = beautiful.apw_width or width
+color = apw_theme.fg_color or '#1a4b5c'
+color_bg = apw_theme.bg_color or '#0F1419'
+color_mute = apw_theme.mute_fg_color or '#be2a15'
+color_bg_mute = apw_theme.mute_bg_color or color_bg
+margin_right = apw_theme.margin_right or 0
+margin_left = apw_theme.margin_left or 0
+margin_top = apw_theme.margin_top or 1
+margin_bottom = apw_theme.margin_bottom or 5
+width = apw_theme.width or 10
 
 
 -- End of configuration
