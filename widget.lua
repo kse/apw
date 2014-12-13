@@ -16,6 +16,7 @@
 
 local awful = require("awful")
 local wibox = require("wibox")
+local naughty = require("naughty")
 local beautiful = require("beautiful")
 local pulseaudio = require("apw.pulseaudio")
 
@@ -55,13 +56,18 @@ local p = pulseaudio:Create()
 
 local pulseBar = awful.widget.progressbar()
 local pulseBox = wibox.widget.textbox(1)
+local pulseLayout = wibox.layout.fixed.horizontal()
 
 pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
+
+
+pulseLayout:add(pulseBar)
+pulseLayout:add(pulseBox)
     
-local pulseWidget = wibox.layout.margin(pulseBar, margin_right, margin_left, margin_top, margin_bottom)
+local pulseWidget = wibox.widget.background(wibox.layout.margin(pulseLayout, margin_left, margin_right, margin_top, margin_bottom), color_bg)
 
 function pulseWidget.setColor(mute)
 	if mute then
@@ -75,7 +81,7 @@ end
 
 local function _update()
 	pulseBar:set_value(p.Volume)
-	text= p.Perc 
+	text = p.Perc 
 	pulseBox:set_text(''..text..'')
 	pulseWidget.setColor(p.Mute)
 end
@@ -86,11 +92,13 @@ end
 
 function pulseWidget.Up()
 	p:SetVolume(p.Volume + pulseBar.step)
+	notid = naughty.notify({ text = 'Volume: ' .. p.Perc, replaces_id = notid }).id
 	_update()
 end	
 
 function pulseWidget.Down()
 	p:SetVolume(p.Volume - pulseBar.step)
+	notid = naughty.notify({ text = 'Volume: ' .. p.Perc, replaces_id = notid }).id
 	_update()
 end	
 
