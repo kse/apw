@@ -28,7 +28,6 @@ local margin_left   = 0         -- left margin in pixels of progressbar
 local margin_top    = 1         -- top margin in pixels of progressbar 
 local margin_bottom = 5         -- bottom margin in pixels of progressbar  
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
-local minstep	    = 0.01	-- minimum stepsize for volume
 local color         = '#1a4b5c'--'#698f1e' -- foreground color of progessbar
 local color_bg      = '#0F1419'--'#33450f' -- background color
 local color_mute    = '#be2a15' -- foreground color when muted
@@ -101,23 +100,6 @@ function pulseWidget.Down()
 	notid = naughty.notify({ text = 'Volume: ' .. p.Perc, replaces_id = notid }).id
 	_update()
 end	
-
-function pulseWidget.minUp()
-	p:SetVolume(p.Volume + pulseBar.minstep)
-	if p.Mute then
-		pulseWidget.ToggleMute()
-	end
-	_update()
-end	
-
-function pulseWidget.minDown()
-	p:SetVolume(p.Volume - pulseBar.minstep)
-	if p.Mute then
-		pulseWidget.ToggleMute()
-	end
-	_update()
-end	
-
 
 function pulseWidget.ToggleMute()
 	p:ToggleMute()
@@ -200,8 +182,8 @@ buttonsTable = awful.util.table.join(
 		awful.button({ }, 12, pulseWidget.ToggleMute),
 		awful.button({ }, 2, pulseWidget.ToggleMute),
 		awful.button({ }, 3, pulseWidget.LaunchMixer),
-		awful.button({ }, 4, pulseWidget.minUp),
-		awful.button({ }, 5, pulseWidget.minDown)
+		awful.button({ }, 4, pulseWidget.Up),
+		awful.button({ }, 5, pulseWidget.Down)
 	)
 pulseWidget:buttons(buttonsTable)
 pulseBox:buttons(buttonsTable)
