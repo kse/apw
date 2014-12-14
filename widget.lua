@@ -23,6 +23,7 @@ local pulseaudio = require("apw.pulseaudio")
 
 -- Configuration variables
 local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
+local mixer         = 'pavucontrol'
 local mixer_class   = 'Pavucontrol'
 local veromix       = 'veromix' --veromix command
 local veromix_class = 'veromix'
