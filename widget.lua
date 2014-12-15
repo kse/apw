@@ -23,8 +23,8 @@ local pulseaudio = require("apw.pulseaudio")
 
 -- Configuration variables
 local width         = 8          -- width in pixels of progressbar
-local margin_right  = 0          -- right margin in pixels of progressbar 
-local margin_left   = 0          -- left margin in pixels of progressbar 
+local margin_right  = 1          -- right margin in pixels of progressbar 
+local margin_left   = 2          -- left margin in pixels of progressbar 
 local margin_top    = 2          -- top margin in pixels of progressbar 
 local margin_bottom = 2          -- bottom margin in pixels of progressbar  
 local step          = 0.05       -- stepsize for volume change (ranges from 0 to 1)
@@ -34,7 +34,7 @@ local color_bg      = '#222222'  -- '#33450f' -- background color
 local color_mute    = '#cc0000'  -- foreground color when muted
 local color_bg_mute = color_bg   -- '#532a15' -- background color when muted
 local color_amp     = '$3465a4'  -- bar color when over 100%
-local color_amp_bg  = color      -- background color when over 100%
+local color_bg_amp  = color      -- background color when over 100%
 local mixer         = 'pavucontrol' -- mixer command
 local mixer_class   = 'Pavucontrol'
 local second	    = 'veromix'     -- veromix command
@@ -77,7 +77,7 @@ function pulseWidget.setColor(mute, volume)
 	else
 		if p.Volume > 1.0 then
 			pulseBar:set_color(color_amp)
-        	        pulseBar:set_background_color(color_amp_bg)
+			pulseBar:set_background_color(color_bg_amp)
 		else
 			pulseBar:set_color(color)
 			pulseBar:set_background_color(color_bg)
