@@ -1,16 +1,16 @@
 -- Copyright 2013 mokasin
 -- This file is part of the Awesome Pulseaudio Widget (APW).
--- 
+--
 -- APW is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
 -- the Free Software Foundation, either version 3 of the License, or
 -- (at your option) any later version.
--- 
+--
 -- APW is distributed in the hope that it will be useful,
 -- but WITHOUT ANY WARRANTY; without even the implied warranty of
 -- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 -- GNU General Public License for more details.
--- 
+--
 -- You should have received a copy of the GNU General Public License
 -- along with APW. If not, see <http://www.gnu.org/licenses/>.
 
@@ -59,7 +59,7 @@ pulseBar:set_width(width)
 pulseBar:set_vertical(true)
 pulseBar.step = step
 pulseBar.minstep = minstep
-    
+
 pulseLayout:add(pulseBar)
 pulseLayout:add(pulseBox)
 
@@ -81,7 +81,7 @@ function pulseWidget.setColor(mute, volume)
 end
 
 local function _update()
-    if p.Volume > 1.0 then 
+    if p.Volume > 1.0 then
         pulseBar:set_value(p.Volume - 1.0)
     else
         pulseBar:set_value(p.Volume)
@@ -97,29 +97,39 @@ end
 function pulseWidget.notify(text)
     if last_text ~= text then
         last_text = text;
-        local icon = { [false] = icon_path..'/audio-volume-'..icon_level[math.ceil(p.Volume/0.5)]..'.png',
-                        [true] = icon_path..'/audio-volume-'..icon_level[0]..'.png' }
+        local icon = {
+			[false] = icon_path..'/audio-volume-'..icon_level[math.ceil(p.Volume/0.5)]..'.png',
+             [true] = icon_path..'/audio-volume-'..icon_level[0]..'.png' }
         notid = naughty.notify({ title = 'apw', text = text, icon = icon[p.Mute],
                                  timeout = 2, replaces_id = notid }).id
     end
 end
 
-function pulseWidget.Up()
+function pulseWidget.Up(notify)
+    notify = notify or 1
     p:SetVolume(p.Volume + pulseBar.step)
-    pulseWidget.notify('Volume: ' .. p.Perc)
+    if notify ~=0 then
+        pulseWidget.notify('Volume: ' .. p.Perc)
+    end
     _update()
-end	
+end
 
-function pulseWidget.Down()
+function pulseWidget.Down(notify)
+    notify = notify or 1
     p:SetVolume(p.Volume - pulseBar.step)
-    pulseWidget.notify('Volume: ' .. p.Perc)
+    if notify ~= 0 then
+        pulseWidget.notify('Volume: ' .. p.Perc)
+    end
     _update()
-end	
+end
 
-function pulseWidget.ToggleMute()
+function pulseWidget.ToggleMute(notify)
+    notify = notify or 1
     p:ToggleMute()
-    local  msg = { [false] = 'Unmuted: ', [true] = 'Muted: ' }
-    pulseWidget.notify( msg[p.Mute] .. p.Perc)
+    if notify ~= 0 then
+        local msg = { [false] = 'Unmuted: ', [true] = 'Muted: ' }
+        pulseWidget.notify( msg[p.Mute] .. p.Perc)
+    end
     _update()
 end
 
@@ -193,11 +203,11 @@ end
 -- register mouse button actions
 buttonsTable = awful.util.table.join(
         awful.button({ }, 1,  pulseWidget.LaunchVeromix),
-        awful.button({ }, 12, pulseWidget.ToggleMute),
-        awful.button({ }, 2,  pulseWidget.ToggleMute),
+        awful.button({ }, 12, function() pulseWidget.ToggleMute(0) end),
+        awful.button({ }, 2,  function() pulseWidget.ToggleMute(0) end),
         awful.button({ }, 3,  pulseWidget.LaunchMixer),
-        awful.button({ }, 4,  pulseWidget.Up),
-        awful.button({ }, 5,  pulseWidget.Down)
+        awful.button({ }, 4,  function() pulseWidget.Up(0) end),
+        awful.button({ }, 5,  function() pulseWidget.Down(0) end)
     )
 pulseWidget:buttons(buttonsTable)
 
