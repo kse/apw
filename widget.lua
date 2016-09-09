@@ -22,7 +22,7 @@ local pulseaudio = require("apw.pulseaudio")
 
 
 -- Configuration variables
-local step          = 0.05      -- stepsize for volume change (ranges from 0 to 1)
+local step          = 0.03      -- stepsize for volume change (ranges from 0 to 1)
 local mixer         = 'pavucontrol'
 local mixer_class   = 'Pavucontrol'
 local veromix       = 'veromix' --veromix command
@@ -34,17 +34,19 @@ local icon_level    = { [0] = 'muted', 'low', 'medium', 'high' }
 local apw_theme = (type(beautiful.apw) == "table") and beautiful.apw  or {}
 
 -- default configuration overridden by Beautiful theme
-color           = apw_theme.fg_color        or '#1a4b5c'
-color_bg        = apw_theme.bg_color        or '#0F1419'
-color_mute      = apw_theme.mute_fg_color   or '#be2a15'
-color_bg_mute   = apw_theme.mute_bg_color   or color_bg
-color_amp       = apw_theme.amp_fg_color    or '#3465a4'
-color_bg_amp    = apw_theme.amp_bg_color    or color
-margin_right    = apw_theme.margin_right    or 0
-margin_left     = apw_theme.margin_left     or 0
-margin_top      = apw_theme.margin_top      or 1
-margin_bottom   = apw_theme.margin_bottom   or 5
-width           = apw_theme.width           or 10
+color             = apw_theme.fg_color        or '#1A4B5C'
+color_bg          = apw_theme.bg_color        or '#0F1419'
+-- color_bg        = apw_theme.bg_color        or '#0F1419'
+color_mute        = apw_theme.mute_fg_color   or '#BE2A15'
+color_bg_mute     = apw_theme.mute_bg_color   or color_bg
+color_bg_mute_amp = apw_theme.mute_bg_color   or '#751A0D'
+color_amp         = apw_theme.amp_fg_color    or '#3465A4'
+color_bg_amp      = apw_theme.amp_bg_color    or color
+margin_right      = apw_theme.margin_right    or 0
+margin_left       = apw_theme.margin_left     or 0
+margin_top        = apw_theme.margin_top      or 5
+margin_bottom     = apw_theme.margin_bottom   or 5
+width             = apw_theme.width           or 40
 
 
 -- End of configuration
@@ -52,23 +54,32 @@ width           = apw_theme.width           or 10
 local p = pulseaudio:Create()
 
 local pulseBar = awful.widget.progressbar()
-local pulseBox = wibox.widget.textbox(1)
+--local pulseBox = wibox.widget.textbox(1)
 local pulseLayout = wibox.layout.fixed.horizontal()
 
 pulseBar:set_width(width)
-pulseBar:set_vertical(true)
+pulseBar:set_vertical(false)
+pulseBar:set_ticks_gap(1)
+pulseBar:set_ticks(true)
+pulseBar:set_ticks_size(width/4 - 1)
+
 pulseBar.step = step
 pulseBar.minstep = minstep
 
 pulseLayout:add(pulseBar)
-pulseLayout:add(pulseBox)
+--pulseLayout:add(pulseBox)
 
 local pulseWidget = wibox.widget.background(wibox.layout.margin(pulseLayout, margin_left, margin_right, margin_top, margin_bottom), color_bg)
 
 function pulseWidget.setColor(mute, volume)
     if mute then
         pulseBar:set_color(color_mute)
-        pulseBar:set_background_color(color_bg_mute)
+
+		if p.Volume > 1.0 then
+			pulseBar:set_background_color(color_bg_mute_amp)
+		else
+			pulseBar:set_background_color(color_bg_mute)
+		end
     else
         if p.Volume > 1.0 then
             pulseBar:set_color(color_amp)
@@ -86,7 +97,7 @@ local function _update()
     else
         pulseBar:set_value(p.Volume)
     end
-    pulseBox:set_text(p.Perc)
+    --pulseBox:set_text(p.Perc)
     pulseWidget.setColor(p.Mute, p.Volume)
 end
 
@@ -107,6 +118,7 @@ end
 
 function pulseWidget.Up(notify)
     notify = notify or 1
+
     p:SetVolume(p.Volume + pulseBar.step)
     if notify ~=0 then
         pulseWidget.notify('Volume: ' .. p.Perc)

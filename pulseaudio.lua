@@ -41,8 +41,6 @@ end
 
 function pulseaudio:UpdateState()
     local f = io.popen(cmd .. " dump")
-	
-
 
     -- if the cmd can't be found
     if f == nil then
@@ -59,7 +57,7 @@ function pulseaudio:UpdateState()
         return false
     end
 
-    -- retreive volume of default sink
+    -- retrieve volume of default sink
     for sink, value in string.gmatch(out, "set%-sink%-volume ([^%s]+) (0x%x+)") do
         if sink == default_sink then
             self.Volume = tonumber(value) / 0x10000
@@ -83,6 +81,16 @@ function pulseaudio:UpdateState()
     f:close()
 end
 
+function pulseaudio:ListSinks()
+	local f = io.popen(cmd .. " list-sinks")
+
+	if f == nil then
+		return false
+	end
+
+
+end
+
 -- Run process and wait for it to end
 function run(cmd)
     io.popen(cmd):read("*a")
@@ -94,14 +102,25 @@ function pulseaudio:SetVolume(vol)
         vol = 1.5
     end
 
+	if vol < 1.03 and vol > 0.97 then
+		vol = 1
+	end
+
     if vol < 0 then
         vol = 0
     end
 
-    vol = vol * 0x10000
+    vol = math.floor(vol * 0x10000)
+
+	--local naughty = require("naughty")
+	--naughty.notify({text=vol})
+	--naughty.notify({text=default_sink})
+	--naughty.notify({text=string.format("0X%x", vol)})
+
     -- set...
     run(cmd .. " set-sink-volume " .. default_sink .. " " .. string.format("0x%x", vol))
     -- ...and update values
+
     self:UpdateState()
 end
 
@@ -124,4 +143,3 @@ function round(num,idp)
 end
 
 return pulseaudio
-
